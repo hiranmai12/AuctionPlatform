@@ -13,17 +13,15 @@ function Signin() {
     setError('');
 
     try {
-      const res = await axios.post('http://localhost:8000/signin', { username, password });
-      console.log('Signin Response:', res.data);
+      const res = await axios.post('http://localhost:5000/signin', { username, password });
 
       if (res.data.token) {
         localStorage.setItem('authToken', res.data.token);
-        navigate('/dashboard'); // Redirect to dashboard
+        navigate('/dashboard');
       } else {
         setError('Invalid credentials');
       }
     } catch (err) {
-      console.error('Signin Request Error:', err.response?.data || err.message);
       setError(err.response?.data?.message || 'Something went wrong. Please try again.');
     }
   };

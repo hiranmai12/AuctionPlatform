@@ -11,11 +11,10 @@ function AuctionItem() {
   useEffect(() => {
     const fetchItem = async () => {
       try {
-        const res = await axios.get(`http://localhost:8000/auctions/${id}`);
+        const res = await axios.get(`http://localhost:5000/auctions/${id}`);
         setItem(res.data);
       } catch (error) {
-        setMessage('Error fetching auction item: ' + error.response?.data?.message || error.message);
-        console.error(error);
+        setMessage('Error fetching auction item: ' + (error.response?.data?.message || error.message));
       }
     };
 
@@ -23,22 +22,21 @@ function AuctionItem() {
   }, [id]);
 
   const handleBid = async () => {
-    const username = prompt('Enter your username to place a bid:');
-
-    if (parseFloat(bid)<= item.currentBid) {
-      setMessage('Bid must be higher than the current bid.');
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      alert('You must be signed in to place a bid.');
       return;
     }
 
     try {
-      const res = await axios.post(`http://localhost:8000/bid/${id}`, { bid, username });
+      const res = await axios.post(
+        `http://localhost:5000/bid/${id}`,
+        { bid },
+        { headers: { Authorization: `Bearer ${token}` } } // Token required
+      );
       setMessage(res.data.message);
-      if (res.data.winner) {
-        setMessage(`Auction closed. Winner: ${res.data.winner}`);
-      }
     } catch (error) {
       setMessage('Error placing bid.');
-      console.error(error);
     }
   };
 
@@ -55,7 +53,7 @@ function AuctionItem() {
         placeholder="Enter your bid"
       />
       <button onClick={handleBid}>Place Bid</button>
-      {message && <p className="message">{message}</p>}
+      {message && <p>{message}</p>}
     </div>
   );
 }

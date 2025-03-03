@@ -12,7 +12,7 @@ function PostAuction() {
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (!token) {
-      navigate('/signin'); // Redirect to login if not authenticated
+      navigate('/signin');
     }
   }, [navigate]);
 
@@ -27,7 +27,7 @@ function PostAuction() {
 
     try {
       await axios.post(
-        'http://localhost:8000/auction',
+        'http://localhost:5000/auction',
         { itemName, description, startingBid, closingTime },
         { headers: { Authorization: `Bearer ${token}` } } // Send token in headers
       );

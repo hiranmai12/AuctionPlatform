@@ -1,48 +1,63 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
-import { Navigate } from "react-router-dom";
+import { useNavigate, Link } from 'react-router-dom';
+
 function Dashboard() {
-  const [items, setItems] = useState([]);
-  const nav = useNavigate();
+  const [auctions, setAuctions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (!token) {
-      nav('/signin');
+      navigate('/signin'); // Redirect to signin if not authenticated
+      return;
     }
 
-    const fetchItems = async () => {
+    const fetchAuctions = async () => {
       try {
-        const res = await axios.get('http://localhost:8000/auctions');
-        setItems(res.data);
+        const res = await axios.get('http://localhost:5000/auctions', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setAuctions(res.data);
       } catch (error) {
         console.error('Error fetching auctions:', error);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchItems();
-  }, []);
 
+    fetchAuctions();
+  }, [navigate]);
 
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    navigate('/signin');
+  };
 
   return (
     <div>
-      <h2>Auction Dashboard</h2>
+      <h2>Dashboard</h2>
+      <button onClick={handleLogout}>Logout</button>
+      <button onClick={() => navigate('/post-auction')}>Post New Auction</button>
 
-
-      <Link to="/post-auction">
-        <button>Post New Auction</button>
-      </Link>
-
-      <ul>
-        {items.map((item) => (
-          <li key={item._id}>
-            <Link to={`/auction/${item._id}`}>
-              {item.itemName} - Current Bid: ${item.currentBid} {item.isClosed ? '(Closed)' : ''}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      {loading ? (
+        <p>Loading auctions...</p>
+      ) : auctions.length === 0 ? (
+        <p>No auctions available.</p>
+      ) : (
+        <ul>
+          {auctions.map((auction) => (
+            <li key={auction.id}>
+              <Link to={`/auction/${auction.id}`}>
+                <h3>{auction.itemName}</h3>
+              </Link>
+              <p>Starting Bid: ${auction.startingBid}</p>
+              <p>Current Bid: ${auction.currentBid || 'No bids yet'}</p>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

@@ -6,27 +6,25 @@ function Signup() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const navigate = useNavigate();
 
   const handleSignup = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
 
     if (!username || !password) {
-      setError('Username and password are required');
+      setError('All fields are required');
       return;
     }
 
     try {
-     const res=await axios.post('http://localhost:8000/signup', {
-        username,
-        password
-      });
+      await axios.post('http://localhost:5000/signup', { username, password });
 
-      alert('Signup successful! Please sign in.');
-      navigate('/signin'); // Redirect to signin page
+      setSuccess('Signup successful! Please sign in.');
+      navigate('/signin');
     } catch (err) {
-      console.error('Signup Error:', err.response?.data || err.message);
       setError(err.response?.data?.message || 'Signup failed. Please try again.');
     }
   };
@@ -35,6 +33,7 @@ function Signup() {
     <div className="form-container">
       <h2>Signup</h2>
       {error && <p className="error">{error}</p>}
+      {success && <p className="success">{success}</p>}
       <form onSubmit={handleSignup}>
         <input
           type="text"
